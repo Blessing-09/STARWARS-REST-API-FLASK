@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Planet, People, favorite_type
+from models import db, User, Planet, People, Favorite,favorite_type
 #from models import Person
 
 app = Flask(__name__)
@@ -36,17 +36,25 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
+@app.route('/users', methods=['GET']) #Get a list of all the blog post users.
 def get_user():
-    new_user = User.query.all()
-    if not new_user:
-        return jsonify({"msg": "User not found"}), 400
-    return 
-    response_body = {
-        "msg": "Hello, this is your GET /user response "
-    }
+    users = User.query.all()
+    if not users:
+        return jsonify({"Error msg": "Users not found"}), 404
+    
+    users_info  = list(map(lambda user: user.serialize(), users))
+    return jsonify(users_info), 200
 
-    return jsonify(response_body), 200
+@app.route('/users/favorites', methods=['GET']) #Get all the favorites that belong to the current user.
+def get_users_favorites():
+    user = User.query.first()
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+    
+    favorites = Favorite.query.filter_by(user_id = user.id).all() #user_id in fav model(FK)
+    all_favorites = [favorite.serialize() for favorite in favorites]
+    return jsonify(all_favorites), 200
+
 
 @app.route('/planets', methods=['GET'])
 def get_planets():
@@ -63,6 +71,17 @@ def get_planet(planet_id):
     planet_info  = planet.serialize() #no need to map list cuz we are returning just one planet
     return jsonify(planet_info), 200
 
+@app.route('favorite/planets/<int:planet_id>', methods=['POST']) #Add new favorite planet to the current user with the people id = people_id.
+def add_planet(planet_id):
+    user = User.querr.first()
+    if user is None:
+        return jsonify({"Error": "User not found"}), 400
+    new_favorite = Favorite(user_id = user.id, planet_id = planet_id, type = favorite_type.PLANET)
+     #save to database
+    db.session.add(new_favorite)
+    db.session.commit()
+    return jsonify(new_favorite.serialize()), 201
+
 @app.route('/people', methods=['GET'])
 def get_people():
     people = People.query.all() #gets all persons from model
@@ -72,13 +91,47 @@ def get_people():
 
 @app.route('/people/<int:people_id>', methods=['GET'])
 def get_person(people_id):
-    person = People.query.get(people_id) #gets a single planet from model
+    person = People.query.get(people_id) #gets a single person from model
     if person is None:
         return jsonify({"Error msg": "person not found"}), 404
     person_info  = person.serialize() #no need to map list cuz we are returning just one planet
     return jsonify(person_info), 200
-    
 
+@app.route('favorite/people/<int:people_id>', methods=['POST']) #Add new favorite people to the current user with the people id = people_id.
+def add_person(people_id):
+    user = User.querr.first()
+    if user is None:
+        return jsonify({"Error": "User not found"}), 400
+    new_favorite = Favorite(user_id = user.id, people_id = people_id, type = favorite_type.PEOPLE)
+     #save to database
+    db.session.add(new_favorite)
+    db.session.commit()
+    return jsonify(new_favorite.serialize()), 201
+
+
+@app.route('/favorites', methods=['GET'])
+def get_favorites():
+    favorites = Favorite.query.all() #gets all favorites from model
+    favorites_info  = list(map(lambda favorite: favorite.serialize(), favorites))
+
+    return jsonify(favorites_info), 200
+
+@app.route('/favorites', methods=['POST'])
+def create_favorites():
+    data = request.get_json()
+    user_id = data("user_id")
+    favorite_type = data("type")
+
+    # 3. Validate the fields (good practice!)
+    if not user_id or not favorite_type:
+        return jsonify({"error": "user_id and type are required"}), 400
+    
+    new_favorite = Favorite(user_id=user_id, type=favorite_type)
+
+    #save to database
+    db.session.add(new_favorite)
+    db.session.commit()
+    return jsonify(new_favorite.serialize()), 201
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
