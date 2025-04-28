@@ -71,16 +71,32 @@ def get_planet(planet_id):
     planet_info  = planet.serialize() #no need to map list cuz we are returning just one planet
     return jsonify(planet_info), 200
 
-@app.route('favorite/planets/<int:planet_id>', methods=['POST']) #Add new favorite planet to the current user with the people id = people_id.
+@app.route('/favorite/planet/<int:planet_id>', methods=['POST']) #Add new favorite planet to the current user with the planet id = planet_id.
 def add_planet(planet_id):
-    user = User.querr.first()
+    user = User.query.first()
     if user is None:
         return jsonify({"Error": "User not found"}), 400
-    new_favorite = Favorite(user_id = user.id, planet_id = planet_id, type = favorite_type.PLANET)
+    planet = Planet.query.get(planet_id)
+    if planet is None:
+        return jsonify({"Error": "Planet not found"}), 404
+    new_favorite_planet = Favorite(user_id = user.id, planet_id = planet_id, type = favorite_type.PLANET)
      #save to database
-    db.session.add(new_favorite)
+    db.session.add(new_favorite_planet)
     db.session.commit()
-    return jsonify(new_favorite.serialize()), 201
+    return jsonify(new_favorite_planet.serialize()), 201
+
+@app.route('/favorite/planet/<int:planet_id>', methods=['DELETE']) #Delete a favorite planet with the id = planet_id.
+def delete_planet(planet_id):
+    user = User.query.first()
+    if user is None:
+        return jsonify({"Error": "User not found"}), 400
+    get_planet = Planet.query.filter_by(user_id = user.id, planet_id = planet_id)
+    if get_planet is None:
+        return jsonify({"Error": "Planet not found"}), 404
+     #save to database
+    db.session.delete(get_planet)
+    db.session.commit()
+    return jsonify({"Msg": "Planet component deleted successfully"}), 200
 
 @app.route('/people', methods=['GET'])
 def get_people():
@@ -97,16 +113,37 @@ def get_person(people_id):
     person_info  = person.serialize() #no need to map list cuz we are returning just one planet
     return jsonify(person_info), 200
 
-@app.route('favorite/people/<int:people_id>', methods=['POST']) #Add new favorite people to the current user with the people id = people_id.
+@app.route('/favorite/people/<int:people_id>', methods=['POST']) #Add new favorite people to the current user with the people id = people_id.
 def add_person(people_id):
-    user = User.querr.first()
+    user = User.query.first()
+    if user is None:
+        return jsonify({"Error": "User not found"}), 404
+    person = People.query.get(people_id)
+    if person is None:
+        return jsonify({"Error": "Person not found"}), 404
+    new_favorite_people = Favorite(
+        user_id = user.id, 
+        people_id = people_id, 
+        type = favorite_type.PEOPLE, 
+        name=person.name)
+
+     #save to database
+    db.session.add(new_favorite_people)
+    db.session.commit()
+    return jsonify(new_favorite_people.serialize()), 201
+
+@app.route('/favorite/people/<int:people_id>', methods=['DELETE']) #Delete a favorite people with the id = people_id.
+def delete_planet(people_id):
+    user = User.query.first()
     if user is None:
         return jsonify({"Error": "User not found"}), 400
-    new_favorite = Favorite(user_id = user.id, people_id = people_id, type = favorite_type.PEOPLE)
+    get_person = People.query.filter_by(user_id = user.id, people_id = people_id)
+    if get_person is None:
+        return jsonify({"Error": "Person not found"}), 404
      #save to database
-    db.session.add(new_favorite)
+    db.session.delete(get_person)
     db.session.commit()
-    return jsonify(new_favorite.serialize()), 201
+    return jsonify({"Msg": "People component deleted successfully"}), 200
 
 
 @app.route('/favorites', methods=['GET'])
@@ -115,7 +152,7 @@ def get_favorites():
     favorites_info  = list(map(lambda favorite: favorite.serialize(), favorites))
 
     return jsonify(favorites_info), 200
-
+'''
 @app.route('/favorites', methods=['POST'])
 def create_favorites():
     data = request.get_json()
@@ -132,6 +169,7 @@ def create_favorites():
     db.session.add(new_favorite)
     db.session.commit()
     return jsonify(new_favorite.serialize()), 201
+    '''
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

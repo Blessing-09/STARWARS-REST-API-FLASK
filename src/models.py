@@ -23,7 +23,7 @@ class User(db.Model):
 
 
       # relationship with favourites
-    favorites: Mapped[List["Favorite"]] = relationship(back_populates="user")
+    favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="user")
 
 
     def serialize(self):
@@ -40,12 +40,12 @@ class People(db.Model):
     __tablename__ = "people"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    birth_year: Mapped[str] = mapped_column(String(120), unique=False, nullable=False)
-    eye_color: Mapped[str] = mapped_column(String(120), unique=False, nullable=False)
-    gender: Mapped[str] = mapped_column(String(120), unique=False, nullable=False)
+    birth_year: Mapped[str] = mapped_column(String(120), nullable=False)
+    eye_color: Mapped[str] = mapped_column(String(120), nullable=False)
+    gender: Mapped[str] = mapped_column(String(120), nullable=False)
 
     # relationship with favourites
-    favorites: Mapped[List["Favorite"]] = relationship(back_populates="people")
+    favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="people")
 
     #ser¡alize
     def serialize(self):
@@ -59,12 +59,12 @@ class Planet(db.Model):
     __tablename__ = "planet"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    diameter: Mapped[str] = mapped_column(String(120), unique=False, nullable=False)
-    rotation_period: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    orbital_period: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
+    diameter: Mapped[str] = mapped_column(String(120), nullable=False)
+    rotation_period: Mapped[str] = mapped_column(String(120), nullable=False)
+    orbital_period: Mapped[str] = mapped_column(String(120), nullable=False)
 
      # relationship with favourites
-    favorites: Mapped[List["Favorite"]] = relationship(back_populates="planet")
+    favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="planet")
 
     #serialize
     def serialize(self): #converts the object into a dictionary, JSON, or some other simplified structure. This allows you to store or transmit the object in a simpler format.
@@ -84,9 +84,9 @@ class Favorite(db.Model):
     user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
 
     # relationship with people, planet and user models
-    people: Mapped["People"] = relationship(back_populates="favorites")
-    planet: Mapped["Planet"]= relationship(back_populates="favorites")
-    user: Mapped["User"] = relationship(back_populates="favorites")
+    people: Mapped["People"] = relationship("People", back_populates="favorites")
+    planet: Mapped["Planet"]= relationship("Planet", back_populates="favorites")
+    user: Mapped["User"] = relationship("User", back_populates="favorites")
 
     #serialize
     def serialize(self): 
