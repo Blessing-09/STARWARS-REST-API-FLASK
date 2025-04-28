@@ -40,9 +40,9 @@ class People(db.Model):
     __tablename__ = "people"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    birth_year: Mapped[str] = mapped_column(String(120), nullable=False)
+    birth_year: Mapped[str] = mapped_column(String(120), nullable=True)
     eye_color: Mapped[str] = mapped_column(String(120), nullable=False)
-    gender: Mapped[str] = mapped_column(String(120), nullable=False)
+    #gender: Mapped[str] = mapped_column(String(120), nullable=True)
 
     # relationship with favourites
     favorites: Mapped[List["Favorite"]] = relationship("Favorite", back_populates="people")

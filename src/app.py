@@ -113,6 +113,26 @@ def get_person(people_id):
     person_info  = person.serialize() #no need to map list cuz we are returning just one planet
     return jsonify(person_info), 200
 
+    #BONUS!!!!!!
+@app.route('/people', methods=['POST'])
+def create_person():
+    data = request.get_json()
+    if data is None:
+         return jsonify({"Error": "Data Not Provided"}), 400
+    people = People(name = data.get("name"), eye_color = data.get("eye_color"), birth_year = data.get("birth_year"))
+    db.session.add(people)
+    db.session.commit()
+    return jsonify(people.serialize()), 200
+
+@app.route('/people/<int:people_id>', methods=['DELETE'])
+def delete_person(people_id):
+    people = People.query.filter_by(id = people_id).first()
+    if people is None:
+         return jsonify({"Error": "Not found"}), 404
+    db.session.delete(people)
+    db.session.commit()
+    return jsonify({"Msg": "deleted"}), 200
+
 @app.route('/favorite/people/<int:people_id>', methods=['POST']) #Add new favorite people to the current user with the people id = people_id.
 def add_person(people_id):
     user = User.query.first()
@@ -133,7 +153,7 @@ def add_person(people_id):
     return jsonify(new_favorite_people.serialize()), 201
 
 @app.route('/favorite/people/<int:people_id>', methods=['DELETE']) #Delete a favorite people with the id = people_id.
-def delete_people(people_id):
+def delete_people_favorite(people_id):
     user = User.query.first()
     if user is None:
         return jsonify({"Error": "User not found"}), 400
