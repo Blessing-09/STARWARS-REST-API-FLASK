@@ -90,13 +90,13 @@ def delete_planet(planet_id):
     user = User.query.first()
     if user is None:
         return jsonify({"Error": "User not found"}), 400
-    get_planet = Planet.query.filter_by(user_id = user.id, planet_id = planet_id)
-    if get_planet is None:
+    favorite = Planet.query.filter_by(user_id = user.id, planet_id = planet_id, type = favorite_type.PLANET).first()
+    if favorite is None:
         return jsonify({"Error": "Planet not found"}), 404
      #save to database
-    db.session.delete(get_planet)
+    db.session.delete(favorite)
     db.session.commit()
-    return jsonify({"Msg": "Planet component deleted successfully"}), 200
+    return jsonify({"Msg": "Favorite deleted successfully"}), 200
 
 @app.route('/people', methods=['GET'])
 def get_people():
@@ -133,17 +133,17 @@ def add_person(people_id):
     return jsonify(new_favorite_people.serialize()), 201
 
 @app.route('/favorite/people/<int:people_id>', methods=['DELETE']) #Delete a favorite people with the id = people_id.
-def delete_planet(people_id):
+def delete_people(people_id):
     user = User.query.first()
     if user is None:
         return jsonify({"Error": "User not found"}), 400
-    get_person = People.query.filter_by(user_id = user.id, people_id = people_id)
-    if get_person is None:
+    favorite = People.query.filter_by(user_id= user.id, people_id = people_id, type=favorite_type.PEOPLE).first()
+    if favorite is None:
         return jsonify({"Error": "Person not found"}), 404
      #save to database
-    db.session.delete(get_person)
+    db.session.delete(favorite)
     db.session.commit()
-    return jsonify({"Msg": "People component deleted successfully"}), 200
+    return jsonify({"Msg": "Favorite deleted successfully"}), 200
 
 
 @app.route('/favorites', methods=['GET'])
