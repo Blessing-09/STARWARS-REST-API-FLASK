@@ -73,12 +73,17 @@ def get_planet(planet_id):
 
 @app.route('/favorite/planet/<int:planet_id>', methods=['POST']) #Add new favorite planet to the current user with the planet id = planet_id.
 def add_planet(planet_id):
-    user = User.query.first()
+    data = request.json #permite especificar el usuario a que debemos realizar una operación en concreto(en el body)
+    print(data)
+    user = User.query.filter_by(id = data["user_id"]).first() #id is the User model column
     if user is None:
         return jsonify({"Error": "User not found"}), 400
     planet = Planet.query.get(planet_id)
     if planet is None:
         return jsonify({"Error": "Planet not found"}), 404
+    exist = Favorite.query.filter_by(user_id = user.id, planet_id = planet_id).first()
+    if exist:
+        return jsonify({"Msg": "Favorite already exist"})
     new_favorite_planet = Favorite(user_id = user.id, planet_id = planet_id, type = favorite_type.PLANET)
      #save to database
     db.session.add(new_favorite_planet)
@@ -87,10 +92,12 @@ def add_planet(planet_id):
 
 @app.route('/favorite/planet/<int:planet_id>', methods=['DELETE']) #Delete a favorite planet with the id = planet_id.
 def delete_planet(planet_id):
-    user = User.query.first()
+    data = request.json
+    print(data)
+    user = User.query.filter_by(id = data["user_id"]).first() #id is the User model column
     if user is None:
         return jsonify({"Error": "User not found"}), 400
-    favorite = Planet.query.filter_by(user_id = user.id, planet_id = planet_id, type = favorite_type.PLANET).first()
+    favorite = Favorite.query.filter_by(user_id = user.id, planet_id = planet_id, type = favorite_type.PLANET).first()
     if favorite is None:
         return jsonify({"Error": "Planet not found"}), 404
      #save to database

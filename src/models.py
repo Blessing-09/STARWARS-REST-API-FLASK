@@ -18,8 +18,8 @@ class User(db.Model):
     __tablename__ = "user"
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
-    #age: Mapped[int] = mapped_column(Integer(), unique=False, nullable=False)
-    #password: Mapped[str] = mapped_column(String(120), nullable=False)
+    age: Mapped[int] = mapped_column(Integer(), unique=False, nullable=False)
+    password: Mapped[str] = mapped_column(String(120), nullable=False)
 
 
       # relationship with favourites
@@ -77,7 +77,6 @@ class Planet(db.Model):
 class Favorite(db.Model):
     __tablename__ = "favorites"
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(120), unique=True, nullable=False)
     type: Mapped[favorite_type] = mapped_column(Enum(favorite_type), nullable=False)
     people_id: Mapped[Optional[int]] = mapped_column(ForeignKey("people.id"), nullable=True)
     planet_id: Mapped[Optional[int]] = mapped_column(ForeignKey("planet.id"), nullable=True)
@@ -92,7 +91,9 @@ class Favorite(db.Model):
     def serialize(self): 
          return {
             "id": self.id,
-            "name": self.name,
             "user_id": self.user_id,
-            "type": self.type.value
+            "type": self.type.value,
+            "planet_id": self.planet_id,
+            "planet": self.planet.name if self.planet else None, #Si existe la relación reflejada en la línea 87
+            "people_id": self.people_id
         }
