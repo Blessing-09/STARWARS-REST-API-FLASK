@@ -73,7 +73,7 @@ def get_planet(planet_id):
 
 @app.route('/favorite/planet/<int:planet_id>', methods=['POST']) #Add new favorite planet to the current user with the planet id = planet_id.
 def add_planet(planet_id):
-    data = request.json #permite especificar el usuario a que debemos realizar una operación en concreto(en el body)
+    data = request.json #permite especificar el usuario a que debemos realizar una operación en concreto(en el body pasar el ID)
     print(data)
     user = User.query.filter_by(id = data["user_id"]).first() #id is the User model column
     if user is None:
@@ -148,11 +148,13 @@ def add_person(people_id):
     person = People.query.get(people_id)
     if person is None:
         return jsonify({"Error": "Person not found"}), 404
-    new_favorite_people = Favorite(
+    new_favorite_people = Favorite( #nuevo registro y quiero que ocupe estos datos de los que tiene
         user_id = user.id, 
         people_id = people_id, 
-        type = favorite_type.PEOPLE, 
-        name=person.name)
+        type = favorite_type.PEOPLE,
+
+)
+    
 
      #save to database
     db.session.add(new_favorite_people)

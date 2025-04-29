@@ -95,5 +95,6 @@ class Favorite(db.Model):
             "type": self.type.value,
             "planet_id": self.planet_id,
             "planet": self.planet.name if self.planet else None, #Si existe la relación reflejada en la línea 87
-            "people_id": self.people_id
+            "people_id": self.people_id,
+            "people": self.people.name if self.people else None, #Si existe la relación reflejada en la línea 86
         }
